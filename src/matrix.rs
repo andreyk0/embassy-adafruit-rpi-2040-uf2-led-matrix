@@ -1,6 +1,6 @@
 /// P6-3528-32*32-16S-HL1.1 led matrix
 /// <https://cdn-learn.adafruit.com/downloads/pdf/32x16-32x32-rgb-led-matrix.pdf>
-use embassy_rp::gpio::{AnyPin, Level, Output};
+use embassy_rp::gpio::{Level, Output};
 use embassy_time::Timer;
 
 pub struct LedMatrix<'a> {
@@ -54,18 +54,17 @@ impl LedMatrix<'_> {
             c,
             d,
         }
-
     }
 
     pub fn color(&mut self, c: u8) {
-        let r1l = Level::from(c & 0b100000 != 0);
-        let r2l = Level::from(c & 0b010000 != 0);
+        let r1l = Level::from(c & 0b10_00_00 != 0);
+        let r2l = Level::from(c & 0b01_00_00 != 0);
 
-        let g1l = Level::from(c & 0b001000 != 0);
-        let g2l = Level::from(c & 0b000100 != 0);
+        let g1l = Level::from(c & 0b00_10_00 != 0);
+        let g2l = Level::from(c & 0b00_01_00 != 0);
 
-        let b1l = Level::from(c & 0b000010 != 0);
-        let b2l = Level::from(c & 0b000001 != 0);
+        let b1l = Level::from(c & 0b00_00_10 != 0);
+        let b2l = Level::from(c & 0b00_00_01 != 0);
 
         self.r1.set_level(r1l);
         self.r2.set_level(r2l);

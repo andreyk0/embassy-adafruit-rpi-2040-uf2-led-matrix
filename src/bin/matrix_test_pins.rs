@@ -25,8 +25,8 @@ async fn logger_task(driver: Driver<'static, USB>) {
 
 #[embassy_executor::task]
 async fn matrix_task(mut lm: LedMatrix<'static>) {
-    let c0 = [0b000001, 0b000100, 0b010000];
-    let c1 = [0b000010, 0b001000, 0b100000];
+    let c0 = [0b00_00_01, 0b00_01_00, 0b01_00_00];
+    let c1 = [0b00_00_10, 0b00_10_00, 0b10_00_00];
     let mut cnt = 0u16;
 
     loop {
@@ -60,7 +60,7 @@ async fn main(spawner: Spawner) {
 
     spawner.spawn(logger_task(driver)).unwrap();
 
-    let m_r1 = Output::new(p.PIN_6, Level::Low);
+    let m_r1 = Output::new(p.PIN_8, Level::Low);
     let m_b1 = Output::new(p.PIN_9, Level::Low);
     let m_r2 = Output::new(p.PIN_11, Level::Low);
     let m_b2 = Output::new(p.PIN_12, Level::Low);
@@ -73,7 +73,7 @@ async fn main(spawner: Spawner) {
     let m_d = Output::new(p.PIN_28, Level::Low);
     let m_b = Output::new(p.PIN_24, Level::Low);
     let m_g2 = Output::new(p.PIN_10, Level::Low);
-    let m_g1 = Output::new(p.PIN_5, Level::Low);
+    let m_g1 = Output::new(p.PIN_7, Level::Low);
 
     let lm = LedMatrix::new(
         m_r1, m_r2, m_g1, m_g2, m_b1, m_b2, m_clk, m_lat, m_oe, m_a, m_b, m_c, m_d,

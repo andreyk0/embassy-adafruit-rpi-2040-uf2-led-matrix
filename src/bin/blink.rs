@@ -26,7 +26,30 @@ async fn logger_task(driver: Driver<'static, USB>) {
 async fn main(spawner: Spawner) {
     let p = embassy_rp::init(Default::default());
     let driver = Driver::new(p.USB, Irqs);
-    let mut led = Output::new(p.PIN_13, Level::Low);
+
+    // Test pins
+    let mut pins = [
+        // Output::new(p.PIN_0, Level::Low),
+        // Output::new(p.PIN_1, Level::Low),
+        // Output::new(p.PIN_2, Level::Low),
+        // Output::new(p.PIN_3, Level::Low),
+        // Output::new(p.PIN_4, Level::Low),
+        // Output::new(p.PIN_5, Level::Low),
+        // Output::new(p.PIN_6, Level::High),
+        Output::new(p.PIN_7, Level::Low),
+        Output::new(p.PIN_8, Level::Low),
+        // Output::new(p.PIN_9, Level::Low),
+        // Output::new(p.PIN_10, Level::Low),
+        // Output::new(p.PIN_11, Level::Low),
+        // Output::new(p.PIN_12, Level::Low),
+        // Output::new(p.PIN_13, Level::Low),
+        // Output::new(p.PIN_24, Level::Low),
+        // Output::new(p.PIN_25, Level::Low),
+        // Output::new(p.PIN_26, Level::Low),
+        // Output::new(p.PIN_27, Level::Low),
+        // Output::new(p.PIN_28, Level::Low),
+        // Output::new(p.PIN_29, Level::Low),
+    ];
 
     spawner.spawn(logger_task(driver)).unwrap();
 
@@ -34,7 +57,10 @@ async fn main(spawner: Spawner) {
     loop {
         counter += 1;
         log::info!("Tick {}", counter);
-        led.toggle();
-        Timer::after_secs(1).await;
+
+        for p in pins.iter_mut() {
+            p.toggle();
+        }
+        Timer::after_millis(100).await;
     }
 }
