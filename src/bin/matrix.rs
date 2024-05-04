@@ -36,10 +36,10 @@ async fn matrix_task(mut lm: LedMatrix<'static>) {
 
         lm.oe(false);
 
-        lm.clk().await;
-        lm.clk().await;
-        lm.clk().await;
-        lm.lat().await;
+        lm.clk();
+        lm.clk();
+        lm.clk();
+        lm.lat();
 
         lm.oe(true);
 

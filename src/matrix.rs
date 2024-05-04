@@ -1,7 +1,7 @@
-/// P6-3528-32*32-16S-HL1.1 led matrix
-/// <https://cdn-learn.adafruit.com/downloads/pdf/32x16-32x32-rgb-led-matrix.pdf>
+//! P6-3528-32*32-16S-HL1.1 led matrix
+//! <https://cdn-learn.adafruit.com/downloads/pdf/32x16-32x32-rgb-led-matrix.pdf>
+
 use embassy_rp::gpio::{Level, Output};
-use embassy_time::Timer;
 
 pub struct LedMatrix<'a> {
     r1: Output<'a>,
@@ -20,6 +20,8 @@ pub struct LedMatrix<'a> {
     c: Output<'a>,
     d: Output<'a>,
 }
+
+const PULSE_DELAY_CYCLES: u32 = 8;
 
 impl LedMatrix<'_> {
     pub fn new<'a>(
@@ -92,17 +94,17 @@ impl LedMatrix<'_> {
         self.oe.set_level((!en).into());
     }
 
-    pub async fn clk(&mut self) {
+    pub fn clk(&mut self) {
         self.clk.set_high();
-        Timer::after_micros(10).await;
+        cortex_m::asm::delay(PULSE_DELAY_CYCLES);
         self.clk.set_low();
-        Timer::after_micros(10).await;
+        cortex_m::asm::delay(PULSE_DELAY_CYCLES);
     }
 
-    pub async fn lat(&mut self) {
+    pub fn lat(&mut self) {
         self.lat.set_high();
-        Timer::after_micros(10).await;
+        cortex_m::asm::delay(PULSE_DELAY_CYCLES);
         self.lat.set_low();
-        Timer::after_micros(10).await;
+        cortex_m::asm::delay(PULSE_DELAY_CYCLES);
     }
 }

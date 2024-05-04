@@ -30,9 +30,8 @@ async fn matrix_task(mut lm: LedMatrix<'static>) {
     let mut cnt = 0u16;
 
     loop {
-        let a = (cnt % 16) as u8;
+        let a = (cnt % 17) as u8;
         lm.addr(a);
-        log::info!("addr {}", a);
 
         if cnt % 2 == 0 {
             lm.color(c0[cnt as usize % c0.len()]);
@@ -43,13 +42,14 @@ async fn matrix_task(mut lm: LedMatrix<'static>) {
 
         lm.oe(false);
 
-        lm.clk().await;
-        lm.clk().await;
-        lm.lat().await;
+        for _ in 0..32 {
+          lm.clk();
+        }
+        lm.lat();
 
         lm.oe(true);
 
-        Timer::after_secs(1).await;
+        Timer::after_millis(10).await;
     }
 }
 
