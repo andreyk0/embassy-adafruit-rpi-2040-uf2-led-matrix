@@ -7,6 +7,7 @@
 
 use embassy_executor::Spawner;
 use embassy_rp::bind_interrupts;
+use embassy_rp::gpio::{Level, Output};
 use embassy_rp::peripherals::USB;
 use embassy_rp::usb::{Driver, InterruptHandler};
 use embassy_time::Timer;
@@ -25,12 +26,15 @@ async fn logger_task(driver: Driver<'static, USB>) {
 async fn main(spawner: Spawner) {
     let p = embassy_rp::init(Default::default());
     let driver = Driver::new(p.USB, Irqs);
+    let mut led = Output::new(p.PIN_13, Level::Low);
+
     spawner.spawn(logger_task(driver)).unwrap();
 
     let mut counter = 0;
     loop {
         counter += 1;
         log::info!("Tick {}", counter);
+        led.toggle();
         Timer::after_secs(1).await;
     }
 }
