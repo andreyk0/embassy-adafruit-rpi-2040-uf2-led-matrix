@@ -5,6 +5,7 @@
 #![no_std]
 #![no_main]
 
+use embassy_adafruit_rpi_2040_uf2_led_matrix::display::LedMatrixDisplay;
 use embassy_adafruit_rpi_2040_uf2_led_matrix::matrix::*;
 use embassy_executor::Spawner;
 use embassy_rp::bind_interrupts;
@@ -12,7 +13,15 @@ use embassy_rp::gpio::{Level, Output};
 use embassy_rp::peripherals::USB;
 use embassy_rp::usb::{Driver, InterruptHandler};
 use embassy_time::Timer;
+use embedded_graphics::pixelcolor::Rgb555;
+use embedded_graphics::primitives::StyledDrawable;
 use {defmt_rtt as _, panic_probe as _};
+
+use embedded_graphics::{
+    pixelcolor::{raw::RawU16, Rgb565, RgbColor},
+    prelude::*,
+    primitives::{Circle, PrimitiveStyle, PrimitiveStyleBuilder, Rectangle},
+};
 
 bind_interrupts!(struct Irqs {
     USBCTRL_IRQ => InterruptHandler<USB>;
@@ -24,26 +33,10 @@ async fn logger_task(driver: Driver<'static, USB>) {
 }
 
 #[embassy_executor::task]
-async fn matrix_task(mut lm: LedMatrix<'static>) {
-    lm.addr(0);
-
-    let c = [0b01, 0b0100, 0b010000];
-    let mut cnt = 0u8;
-
+async fn matrix_task(mut lm: LedMatrix<'static>, lmd: LedMatrixDisplay) {
     loop {
-        lm.color(c[cnt as usize % c.len()]);
-        cnt = cnt.wrapping_add(1);
-
-        lm.oe(false);
-
-        lm.clk();
-        lm.clk();
-        lm.clk();
-        lm.lat();
-
-        lm.oe(true);
-
-        Timer::after_secs(1).await;
+        lmd.run(&mut lm).await;
+        Timer::after_millis(10).await;
     }
 }
 
@@ -54,7 +47,7 @@ async fn main(spawner: Spawner) {
 
     spawner.spawn(logger_task(driver)).unwrap();
 
-    let m_r1 = Output::new(p.PIN_6, Level::Low);
+    let m_r1 = Output::new(p.PIN_8, Level::Low);
     let m_b1 = Output::new(p.PIN_9, Level::Low);
     let m_r2 = Output::new(p.PIN_11, Level::Low);
     let m_b2 = Output::new(p.PIN_12, Level::Low);
@@ -67,13 +60,27 @@ async fn main(spawner: Spawner) {
     let m_d = Output::new(p.PIN_28, Level::Low);
     let m_b = Output::new(p.PIN_24, Level::Low);
     let m_g2 = Output::new(p.PIN_10, Level::Low);
-    let m_g1 = Output::new(p.PIN_5, Level::Low);
+    let m_g1 = Output::new(p.PIN_7, Level::Low);
 
     let lm = LedMatrix::new(
         m_r1, m_r2, m_g1, m_g2, m_b1, m_b2, m_clk, m_lat, m_oe, m_a, m_b, m_c, m_d,
     );
 
-    spawner.spawn(matrix_task(lm)).unwrap();
+    let mut lmd = LedMatrixDisplay::new();
+
+    let style = PrimitiveStyleBuilder::new()
+        .stroke_color(Rgb555::RED)
+        .stroke_width(1)
+        .fill_color(Rgb555::GREEN)
+        .build();
+
+    Timer::after_secs(3).await;
+
+    Circle::with_center(Point::new(15, 15), 10)
+        .draw_styled(&style, &mut lmd)
+        .unwrap();
+
+    spawner.spawn(matrix_task(lm, lmd)).unwrap();
 
     let mut counter = 0;
     loop {

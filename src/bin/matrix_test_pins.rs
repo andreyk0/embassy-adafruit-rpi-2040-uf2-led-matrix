@@ -25,25 +25,32 @@ async fn logger_task(driver: Driver<'static, USB>) {
 
 #[embassy_executor::task]
 async fn matrix_task(mut lm: LedMatrix<'static>) {
-    let c0 = [0b00_00_01, 0b00_01_00, 0b01_00_00];
-    let c1 = [0b00_00_10, 0b00_10_00, 0b10_00_00];
+    let c = [
+        0b0001_0001,
+        0b0010_0010,
+        0b0100_0100,
+        0b0101_0101,
+        0b0110_0110,
+        0b0111_0111,
+        0b0011_0011,
+        0b0010_0111,
+        0b0110_0110,
+        0b0111_0111,
+        0b0011_0011,
+        0b0101_0101,
+    ];
     let mut cnt = 0u16;
 
     loop {
         let a = (cnt % 17) as u8;
         lm.addr(a);
 
-        if cnt % 2 == 0 {
-            lm.color(c0[cnt as usize % c0.len()]);
-        } else {
-            lm.color(c1[cnt as usize % c1.len()]);
-        }
+        lm.color(c[cnt as usize % c.len()]);
         cnt = cnt.wrapping_add(1);
 
         lm.oe(false);
-
         for _ in 0..32 {
-          lm.clk();
+            lm.clk();
         }
         lm.lat();
 

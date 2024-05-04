@@ -58,15 +58,16 @@ impl LedMatrix<'_> {
         }
     }
 
+    /// Set colors.
+    /// 0 r2 g2 b2 0 r1 g1 b1
     pub fn color(&mut self, c: u8) {
-        let r1l = Level::from(c & 0b10_00_00 != 0);
-        let r2l = Level::from(c & 0b01_00_00 != 0);
+        let r1l = Level::from(c & 0b0000_0100 != 0);
+        let g1l = Level::from(c & 0b0000_0010 != 0);
+        let b1l = Level::from(c & 0b0000_0001 != 0);
 
-        let g1l = Level::from(c & 0b00_10_00 != 0);
-        let g2l = Level::from(c & 0b00_01_00 != 0);
-
-        let b1l = Level::from(c & 0b00_00_10 != 0);
-        let b2l = Level::from(c & 0b00_00_01 != 0);
+        let r2l = Level::from(c & 0b0100_0000 != 0);
+        let g2l = Level::from(c & 0b0010_0000 != 0);
+        let b2l = Level::from(c & 0b0001_0000 != 0);
 
         self.r1.set_level(r1l);
         self.r2.set_level(r2l);
@@ -78,6 +79,7 @@ impl LedMatrix<'_> {
         self.b2.set_level(b2l);
     }
 
+    /// Set row address 0-15
     pub fn addr(&mut self, a: u8) {
         let al = Level::from(a & 0b0001 != 0);
         let bl = Level::from(a & 0b0010 != 0);
@@ -90,10 +92,12 @@ impl LedMatrix<'_> {
         self.d.set_level(dl);
     }
 
+    /// Enable/disable output
     pub fn oe(&mut self, en: bool) {
         self.oe.set_level((!en).into());
     }
 
+    /// Send a clock pulse
     pub fn clk(&mut self) {
         self.clk.set_high();
         cortex_m::asm::delay(PULSE_DELAY_CYCLES);
@@ -101,6 +105,7 @@ impl LedMatrix<'_> {
         cortex_m::asm::delay(PULSE_DELAY_CYCLES);
     }
 
+    /// Latch output
     pub fn lat(&mut self) {
         self.lat.set_high();
         cortex_m::asm::delay(PULSE_DELAY_CYCLES);
