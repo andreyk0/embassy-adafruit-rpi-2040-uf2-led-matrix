@@ -14,13 +14,13 @@ use embassy_rp::peripherals::USB;
 use embassy_rp::usb::{Driver, InterruptHandler};
 use embassy_time::Timer;
 use embedded_graphics::pixelcolor::Rgb555;
-use embedded_graphics::primitives::StyledDrawable;
+use embedded_graphics::primitives::{Line, StyledDrawable};
 use {defmt_rtt as _, panic_probe as _};
 
 use embedded_graphics::{
-    pixelcolor::{raw::RawU16, Rgb565, RgbColor},
+    pixelcolor::RgbColor,
     prelude::*,
-    primitives::{Circle, PrimitiveStyle, PrimitiveStyleBuilder, Rectangle},
+    primitives::{Circle, PrimitiveStyleBuilder, Rectangle},
 };
 
 bind_interrupts!(struct Irqs {
@@ -35,8 +35,8 @@ async fn logger_task(driver: Driver<'static, USB>) {
 #[embassy_executor::task]
 async fn matrix_task(mut lm: LedMatrix<'static>, lmd: LedMatrixDisplay) {
     loop {
-        lmd.run(&mut lm).await;
-        Timer::after_millis(10).await;
+        lmd.run(&mut lm);
+        Timer::after_millis(1).await;
     }
 }
 
@@ -66,7 +66,19 @@ async fn main(spawner: Spawner) {
         m_r1, m_r2, m_g1, m_g2, m_b1, m_b2, m_clk, m_lat, m_oe, m_a, m_b, m_c, m_d,
     );
 
+    Timer::after_secs(3).await;
+
     let mut lmd = LedMatrixDisplay::new();
+
+    let style = PrimitiveStyleBuilder::new()
+        .stroke_color(Rgb555::BLUE)
+        .stroke_width(1)
+        .fill_color(Rgb555::YELLOW)
+        .build();
+
+    Rectangle::new(Point::zero(), Size::new(32, 32))
+        .draw_styled(&style, &mut lmd)
+        .unwrap();
 
     let style = PrimitiveStyleBuilder::new()
         .stroke_color(Rgb555::RED)
@@ -74,9 +86,16 @@ async fn main(spawner: Spawner) {
         .fill_color(Rgb555::GREEN)
         .build();
 
-    Timer::after_secs(3).await;
-
     Circle::with_center(Point::new(15, 15), 10)
+        .draw_styled(&style, &mut lmd)
+        .unwrap();
+
+    let style = PrimitiveStyleBuilder::new()
+        .stroke_color(Rgb555::WHITE)
+        .stroke_width(1)
+        .build();
+
+    Line::new(Point::zero(), Point::new(31, 31))
         .draw_styled(&style, &mut lmd)
         .unwrap();
 

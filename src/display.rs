@@ -2,16 +2,9 @@
 //! Matrix implementation of embedded graphics API
 //!
 
-use core::convert::TryInto;
-use embedded_graphics::{
-    pixelcolor::{Gray8, GrayColor, Rgb555},
-    prelude::*,
-    primitives::{Circle, PrimitiveStyle, Rectangle},
-};
+use embedded_graphics::{pixelcolor::Rgb555, prelude::*, primitives::Rectangle};
 
 use crate::matrix::LedMatrix;
-
-use embassy_time::Timer;
 
 pub struct LedMatrixDisplay {
     // 32 columns, color data shifted with clk pulses
@@ -25,6 +18,8 @@ pub struct LedMatrixDisplay {
     framebuffer: [u8; 32 * 16],
 }
 
+const PULSE_DELAY_CYCLES: u32 = 512;
+
 impl LedMatrixDisplay {
     pub fn new() -> Self {
         LedMatrixDisplay {
@@ -33,7 +28,7 @@ impl LedMatrixDisplay {
     }
 
     /// Needs to be run in the loop to keep updating matrix
-    pub async fn run(&self, lm: &mut LedMatrix<'_>) {
+    pub fn run(&self, lm: &mut LedMatrix<'_>) {
         for row in 0..16 {
             lm.oe(false);
             lm.addr(row);
@@ -43,8 +38,14 @@ impl LedMatrixDisplay {
             }
             lm.lat();
             lm.oe(true);
-            Timer::after_millis(10).await;
+            cortex_m::asm::delay(PULSE_DELAY_CYCLES);
         }
+    }
+}
+
+impl Default for LedMatrixDisplay {
+    fn default() -> Self {
+        LedMatrixDisplay::new()
     }
 }
 
