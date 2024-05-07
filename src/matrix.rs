@@ -24,6 +24,7 @@ pub struct LedMatrix<'a> {
 const PULSE_DELAY_CYCLES: u32 = 8;
 
 impl LedMatrix<'_> {
+    #![allow(clippy::too_many_arguments)]
     pub fn new<'a>(
         r1: Output<'a>,
         r2: Output<'a>,
