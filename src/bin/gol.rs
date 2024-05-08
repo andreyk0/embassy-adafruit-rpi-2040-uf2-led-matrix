@@ -84,8 +84,7 @@ async fn graphics_task() {
         }
         gol.step();
 
-        //Timer::after_millis(1000).await;
-        Timer::after_millis(250).await;
+        Timer::after_millis(100).await;
     }
 }
 

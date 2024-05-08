@@ -67,12 +67,13 @@ impl Gol {
                         self.ages[i] = 0;
                     }
                     _ => {
-                        self.ages[i] = self.ages[i].saturating_add(1);
-                        /*if (embassy_rp::clocks::RoscRng.next_u32() as u16) < self.ages[i] {
+                        // spawn new life when space is empty for a long time
+                        let rn = embassy_rp::clocks::RoscRng.next_u32();
+                        if self.ages[i] as u32 > rn {
                             self.ages[i] = 0;
                         } else {
-                            self.ages[i] += 1;
-                        }*/
+                            self.ages[i] = self.ages[i].saturating_add(1);
+                        }
                     }
                 }
             }
