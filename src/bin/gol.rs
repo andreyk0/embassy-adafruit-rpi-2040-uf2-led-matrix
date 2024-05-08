@@ -71,7 +71,7 @@ async fn graphics_task() {
     LMD_READY.init(()).unwrap();
 
     let gol = GOL.init(Gol::new());
-    //gol.randomize();
+    gol.randomize();
     gol.glider();
 
     log::info!("Starting matrix scans");

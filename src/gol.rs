@@ -69,7 +69,7 @@ impl Gol {
                     _ => {
                         // spawn new life when space is empty for a long time
                         let rn = embassy_rp::clocks::RoscRng.next_u32();
-                        if self.ages[i] as u32 > rn {
+                        if self.ages[i] > 1000 && rn > u32::MAX / 2 {
                             self.ages[i] = 0;
                         } else {
                             self.ages[i] = self.ages[i].saturating_add(1);
