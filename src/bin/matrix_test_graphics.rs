@@ -1,6 +1,4 @@
-//! This example shows how to use USB (Universal Serial Bus) in the RP2040 chip.
-//!
-//! This creates the possibility to send log::info/warn/error/debug! to USB serial port.
+//! This example shows how to use graphics on the LED matrix.
 
 #![no_std]
 #![no_main]
@@ -8,29 +6,15 @@
 use embassy_adafruit_rpi_2040_uf2_led_matrix::display::LedMatrixDisplay;
 use embassy_adafruit_rpi_2040_uf2_led_matrix::matrix::*;
 use embassy_executor::Spawner;
-use embassy_rp::bind_interrupts;
 use embassy_rp::gpio::{Level, Output};
-use embassy_rp::peripherals::USB;
-use embassy_rp::usb::{Driver, InterruptHandler};
 use embassy_time::Timer;
 use embedded_graphics::pixelcolor::Rgb555;
 use embedded_graphics::primitives::{Line, StyledDrawable};
-use {defmt_rtt as _, panic_probe as _};
-
 use embedded_graphics::{
-    pixelcolor::RgbColor,
     prelude::*,
     primitives::{Circle, PrimitiveStyleBuilder, Rectangle},
 };
-
-bind_interrupts!(struct Irqs {
-    USBCTRL_IRQ => InterruptHandler<USB>;
-});
-
-#[embassy_executor::task]
-async fn logger_task(driver: Driver<'static, USB>) {
-    embassy_usb_logger::run!(1024, log::LevelFilter::Info, driver);
-}
+use {defmt_rtt as _, panic_probe as _};
 
 #[embassy_executor::task]
 async fn matrix_task(mut lm: LedMatrix<'static>, lmd: LedMatrixDisplay) {
@@ -43,9 +27,6 @@ async fn matrix_task(mut lm: LedMatrix<'static>, lmd: LedMatrixDisplay) {
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
     let p = embassy_rp::init(Default::default());
-    let driver = Driver::new(p.USB, Irqs);
-
-    spawner.spawn(logger_task(driver)).unwrap();
 
     let m_r1 = Output::new(p.PIN_8, Level::Low);
     let m_b1 = Output::new(p.PIN_9, Level::Low);
@@ -104,7 +85,7 @@ async fn main(spawner: Spawner) {
     let mut counter = 0;
     loop {
         counter += 1;
-        log::info!("Tick {}", counter);
+        defmt::info!("Tick {}", counter);
         Timer::after_secs(1).await;
     }
 }

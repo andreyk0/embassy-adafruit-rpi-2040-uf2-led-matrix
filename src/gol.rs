@@ -2,7 +2,6 @@
 
 use core::u32;
 use embedded_graphics::{pixelcolor::Rgb555, prelude::*};
-use rand::RngCore;
 
 const W: usize = 32;
 const H: usize = 32;
