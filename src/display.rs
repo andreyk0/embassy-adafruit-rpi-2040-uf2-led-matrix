@@ -27,6 +27,10 @@ impl LedMatrixDisplay {
         }
     }
 
+    pub fn clear(&mut self) {
+        self.framebuffer.fill(0);
+    }
+
     /// Needs to be run in the loop to keep updating matrix
     pub fn run(&self, lm: &mut LedMatrix<'_>) {
         for row in 0..16 {
@@ -70,21 +74,30 @@ impl DrawTarget for LedMatrixDisplay {
     where
         I: IntoIterator<Item = Pixel<Self::Color>>,
     {
-        for Pixel(pcoord, color) in pixels.into_iter() {
-            let x = pcoord.x.max(0).min(31) as usize;
-            let y = pcoord.y.max(0).min(31) as usize;
+        for Pixel(pcoord, color) in pixels {
+            let x = pcoord.x;
+            let y = pcoord.y;
 
-            let c = ((color.r() & 0x1) << 2) | ((color.g() & 0x1) << 1) | (color.b() & 0x1);
+            if x < 0 || x >= 32 || y < 0 || y >= 32 {
+                continue;
+            }
 
-            let (c, mask, y) = if y < 16 {
-                (c, 0xf0, y)
+            let x = x as usize;
+            let y = y as usize;
+
+            let r = if color.r() > 0 { 1 } else { 0 };
+            let g = if color.g() > 0 { 1 } else { 0 };
+            let b = if color.b() > 0 { 1 } else { 0 };
+
+            let c = (r << 2) | (g << 1) | b;
+
+            if y < 16 {
+                let i = x + y * 32;
+                self.framebuffer[i] = (self.framebuffer[i] & 0xf0) | c;
             } else {
-                (c << 4, 0x0f, y - 16)
-            };
-
-            let i = x + y * 32;
-            self.framebuffer[i] &= mask;
-            self.framebuffer[i] |= c;
+                let i = x + (y - 16) * 32;
+                self.framebuffer[i] = (self.framebuffer[i] & 0x0f) | (c << 4);
+            }
         }
 
         Ok(())
