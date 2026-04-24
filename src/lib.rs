@@ -6,3 +6,4 @@ pub mod matrix;
 pub mod cca;
 pub mod lorenz;
 pub mod ants;
+pub mod dejong;
